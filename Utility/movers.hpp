@@ -12,9 +12,10 @@ namespace sdm
     }
 
     template<class Iter>
-    inline void sort(const Iter& begin, const Iter& end)
+    inline void sort(Iter begin, Iter end)
     {
-        for (auto start = begin; start != end - 1; ++start)
+        auto nend = end - 1;
+        for (auto start = begin; start != nend; ++start)
         {
             if (*start > *(start+1))
             {
