@@ -17,7 +17,7 @@ namespace sdm
 
         inline void Link(LinkedNode* oLink) { mLink = oLink; }
         inline LPtr GetLink() { return mLink; }
-        inline LRef Traverse(size_t index)
+        inline LRef Traverse(int index)
         {
             LPtr temp = mLink;
             for ( int i = 1; i < index; ++i )

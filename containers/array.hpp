@@ -5,7 +5,7 @@
 
 namespace sdm
 {
-    template<typename Type, size_t fSize>
+    template<typename Type, int fSize>
     class array
     {
     public:
@@ -17,11 +17,11 @@ namespace sdm
 
     public:
 
-        constexpr TypeRef operator[](size_t index) { return data[index]; }
-        constexpr TypeRef operator[](size_t index) const { return data[index]; }
+        constexpr TypeRef operator[](int index) { return data[index]; }
+        constexpr TypeRef operator[](int index) const { return data[index]; }
 
-        constexpr TypeRef at(size_t pos) { return data[pos]; }
-        constexpr size_t Size()
+        constexpr TypeRef at(int pos) { return data[pos]; }
+        constexpr int Size()
         { return fSize;}
         constexpr Iter begin()
         { return Iter(data); }
