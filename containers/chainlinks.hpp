@@ -1,32 +1,53 @@
 #ifndef SDMUTILS_CHAINLINKS_HPP
 #define SDMUTILS_CHAINLINKS_HPP
 
+#include <iostream>
+
 namespace sdm
 {
+    template<class NodeType>
+    class LNodeControl
+    {
+        public:
+        using LNC = LNodeControl;
+        using LRef = LNC&;
+        using LPtr = LNC*;
+
+        NodeType* m_HEAD = nullptr;
+        NodeType* m_TAIL = nullptr;
+        int m_Length = 1;
+
+        constexpr LRef operator+=(const LRef other)
+        { m_Length += other.m_Length; m_TAIL = other.m_TAIL; return *this; }
+        constexpr LRef operator-=(const LRef other)
+        { m_Length -= other.m_Length; }
+    };
+
     template<typename Type>
     class LinkedNode
     {
+        public:
         using L = LinkedNode;
         using LRef = LinkedNode&;
         using LPtr = LinkedNode*;
 
-        LinkedNode* mLink = nullptr;
+        LinkedNode* m_Link = nullptr;
+        LNodeControl<LinkedNode>* m_Control = nullptr;
 
-        public:
-        LinkedNode(Type payload) : data(payload) {}
+        LinkedNode<LinkedNode>(Type payload) : data(payload) { m_Control = new LNodeControl<LinkedNode>{this, this}; }
 
-        inline void Link(LinkedNode* oLink) { mLink = oLink; }
-        inline LPtr GetLink() { return mLink; }
+        inline void Link(LinkedNode* oLink)
+        { m_Link = oLink; delete oLink->m_Control; oLink->m_Control = m_Control; }
         inline LRef Traverse(int index)
         {
-            LPtr temp = mLink;
+            LPtr temp = m_Link;
             for ( int i = 1; i < index; ++i )
             {
                 temp = temp->GetLink();
             }
             return *temp;
         }
-        inline bool IsEnd() { return mLink == nullptr; }
+        inline bool IsEnd() { return m_Link == nullptr; }
         
         // Operator Overloads
         constexpr LRef operator++() { ++data; return *this; }
