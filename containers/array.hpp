@@ -2,6 +2,7 @@
 #define SDMUTILS_ARRAY_HPP
 
 #include "iterator.hpp"
+#include <iostream>
 
 namespace sdm
 {
@@ -17,15 +18,15 @@ namespace sdm
 
     public:
 
-        constexpr TypeRef operator[](int index) { return data[index]; }
-        constexpr TypeRef operator[](int index) const { return data[index]; }
+        TypeRef operator[](int index) { return data[index]; }
+        TypeRef operator[](int index) const { return data[index]; }
 
         constexpr TypeRef at(int pos) { return data[pos]; }
-        constexpr int Size()
+        constexpr int Size() const
         { return fSize;}
-        constexpr Iter begin()
-        { return Iter(data); }
-        constexpr Iter end()
+        constexpr Iter begin() const
+        { return {data}; }
+        constexpr Iter end() const
         { return Iter(data + fSize); }
 
         constexpr friend std::ostream& operator<<(std::ostream& stream, const array& other)

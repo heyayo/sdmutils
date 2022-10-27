@@ -5,6 +5,7 @@
 
 namespace sdm
 {
+	// DEPRECIATED
     template<class NodeType>
     class LNodeControl
     {
@@ -32,12 +33,11 @@ namespace sdm
         using LPtr = LinkedNode*;
 
         LinkedNode* m_Link = nullptr;
-        LNodeControl<LinkedNode>* m_Control = nullptr;
 
-        LinkedNode<LinkedNode>(Type payload) : data(payload) { m_Control = new LNodeControl<LinkedNode>{this, this}; }
+        LinkedNode<LinkedNode>(Type payload) : data(payload) {}
 
         inline void Link(LinkedNode* oLink)
-        { m_Link = oLink; delete oLink->m_Control; oLink->m_Control = m_Control; }
+        { m_Link = oLink; }
         inline LRef Traverse(int index)
         {
             LPtr temp = m_Link;
@@ -71,6 +71,61 @@ namespace sdm
         
         Type data;
     };
+
+	template<typename Type>
+	class LinkedList
+	{
+		public:
+		using TypeRef = Type&;
+		using TypePtr = Type*;
+		using Node = LinkedNode<Type>;
+		using NodeRef = Node&;
+		using NodePtr = Node*;
+
+		LinkedList<Type>(Type first)
+		{
+			m_HEAD = new Node(first);
+			m_TAIL = m_HEAD;
+			capacity = 1;
+		}
+		// TODO DECONSTRUCTOR
+
+		private:
+		NodePtr m_HEAD;
+		NodePtr m_TAIL;
+		unsigned capacity;
+
+		public:
+		constexpr NodePtr first()
+		{ return m_HEAD; }
+		constexpr NodePtr last()
+		{ return m_TAIL; }
+
+		constexpr void chainback(Type data)
+		{
+			auto temp = new Node(data);
+			m_TAIL->m_Link = temp;
+			m_TAIL = temp;
+			++capacity;
+		}
+		constexpr void chainfront(Type data)
+		{
+			auto temp = new Node(data);
+			temp->m_Link = m_HEAD;
+			m_HEAD = temp;
+			++capacity;
+		}
+
+		constexpr friend std::ostream& operator<<(std::ostream& stream, LinkedList& other)
+		{
+			auto curr = other.first();
+			while (curr->m_Link != nullptr)
+			{
+				stream << curr->data << ' ';
+			}
+			return stream;
+		}
+	};
 }
 
 #endif
