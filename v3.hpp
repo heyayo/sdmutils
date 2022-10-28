@@ -1,7 +1,7 @@
 #ifndef SDMUTILS_V3_HPP
 #define SDMUTILS_V3_HPP
-#include "utility/math.hpp"
-#include "utility/exceptions.hpp"
+#include "math.hpp"
+#include "exceptions.hpp"
 #include <iostream>
 
 namespace sdm
