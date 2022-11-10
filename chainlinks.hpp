@@ -25,8 +25,8 @@ namespace sdm
 
 		protected:
         Type data;
-		BaseNode(Type payload) : data(payload) { std::cout << "DEBUG BASENODE" << std::endl; }
-		~BaseNode() { std::cout << "DEBUG BASENODE DEATH" << std::endl; }
+		BaseNode(Type payload) : data(payload) {}
+		~BaseNode() {}
 
         public:
 		constexpr Type& value() { return data; }
@@ -87,8 +87,8 @@ namespace sdm
 		NPtr m_Backward;
 
 		public:
-		BNode(Type payload) : BaseNode<Type>(payload), m_Backward(nullptr) { std::cout << "DEBUG BNODE" << std::endl; }
-		~BNode() { std::cout << "DEBUG BNODE DEATH" << std::endl; }
+		BNode(Type payload) : BaseNode<Type>(payload), m_Backward(nullptr) {}
+		~BNode() {}
 
 		constexpr void linkBack(NPtr oLink)
 		{ m_Backward = oLink; }
@@ -109,9 +109,8 @@ namespace sdm
 		NPtr m_Backward;
 
 		public:
-		DNode(Type payload) : BaseNode<Type>(payload), m_Forward(nullptr), m_Backward(nullptr)
-		{ std::cout << "DEBUG DNODE" << std::endl; }
-		DNode() { std::cout << "DEBUG DNODE DEATH" << std::endl; }
+		DNode(Type payload) : BaseNode<Type>(payload), m_Forward(nullptr), m_Backward(nullptr) {}
+		DNode() {}
 
 		constexpr void linkBack(NPtr oLink) { m_Backward = oLink; }
 		constexpr void linkFront(NPtr oLink) { m_Forward = oLink; }
@@ -201,6 +200,8 @@ namespace sdm
 		}
 		~LinkedList()
 		{
+			if (!m_Capacity)
+				return;
 			auto next = m_HEAD;
 			auto curr = m_HEAD;
 			m_HEAD = nullptr;
@@ -292,12 +293,58 @@ namespace sdm
 			}
 			++m_Capacity; // Increase capacity
 		}
-		constexpr Type detach(int index) // Detach Node and return
+		constexpr void chainat(Type data, const int index)
+		{
+			if (index == m_Capacity)
+			{
+				chainback(data);
+				return;
+			}
+			auto curr = first();
+			for (int i = 0; i < index; ++i)
+			{
+				curr = curr->next();
+			}
+			auto newNode = new Node(data);
+			auto after = curr->next();
+			if constexpr ( std::is_same<DNode<Type>,Node>::value )
+			{
+				after->linkFront(newNode);
+				newNode->linkFront(curr);
+			}
+			curr->linkBack(newNode);
+			newNode->linkBack(after);
+			++m_Capacity;
+		}
+		constexpr void chainat(Type data, const NodePtr loc)
+		{
+			if (loc->isTail())
+			{
+				chainback(data);
+				return;
+			}
+			auto curr = first();
+			while (curr != loc)
+			{
+				curr = curr->next();
+			}
+			auto newNode = new Node(data);
+			auto after = curr->next();
+			if constexpr ( std::is_same<DNode<Type>,Node>::value )
+			{
+				after->linkFront(newNode);
+				newNode->linkFront(curr);
+			}
+			curr->linkBack(newNode);
+			newNode->linkBack(after);
+			++m_Capacity;
+		}
+		constexpr Type detach(const int index) // Detach Node and return
 		{
 			--m_Capacity; // Decrease capacity
 			if (index == 0)
 			{
-				if constexpr (std::is_same<BNode<Type>,Node>::value || std::is_same<DNode<Type>,Node>::value)
+				if constexpr (std::is_same<BNode<Type>,Node>::value || std::is_same<DNode<Type>,Node>::value) // Probably Useless
 				{
 					auto temp = m_HEAD;
 					m_HEAD = m_HEAD->next();
@@ -310,7 +357,7 @@ namespace sdm
 					return returnval;
 				}
 			}
-			if constexpr (std::is_same<BNode<Type>,Node>::value || std::is_same<DNode<Type>,Node>::value)
+			if constexpr (std::is_same<BNode<Type>,Node>::value || std::is_same<DNode<Type>,Node>::value) // probably useless
 			{
 				auto prev = m_HEAD; // The node behind
 				for (int i = 1; i < index; ++i)
@@ -318,7 +365,7 @@ namespace sdm
 					prev = prev->next(); // Going to the node behind
 				}
 				auto curr = prev->next(); // Going to the node to delete
-				if (curr->isTail()) // If deleting last node
+				if (curr == m_TAIL) // If deleting last node
 				{ 
 					m_TAIL = prev; // Set tail to behind
 					prev->linkBack(nullptr); // Make node point to nullptr
@@ -336,8 +383,53 @@ namespace sdm
 				return returnval;
 			}
 		}
+		constexpr Type detach(const NodePtr loc)
+		{
+			--m_Capacity;
+			if (loc == first()) // Not using isHead() due to Template Considerations
+			{
+				auto temp = m_HEAD;
+				if (!m_HEAD->isTail())
+				{
+					m_HEAD = m_HEAD->next();
+					if constexpr (std::is_same<DNode<Type>,Node>::value)
+					{
+						m_HEAD->linkFront(nullptr);
+					}
+				}
+				Type returnval = temp->value();
+				delete temp;
+				return returnval;
+			}
+			bool begun = false;
+			auto prev = m_HEAD; // The node behind
+			auto curr = m_HEAD; // Going to the node to delete
+			while (curr != loc)
+			{
+				if (begun)
+					prev = prev->next();
+				curr = curr->next();
+				begun = true;
+			}
+			if (curr == m_TAIL) // If deleting last node
+			{ 
+				m_TAIL = prev; // Set tail to behind
+				prev->linkBack(nullptr); // Make node point to nullptr
+			} 
+			else // If not deleting last node
+			{
+				prev->linkBack(curr->next()); // Detach node from links and relink behind and after
+				if constexpr (std::is_same<DNode<Type>,Node>::value)
+				{
+					curr->next()->linkFront(prev);
+				}
+			}
+			Type returnval = curr->value(); // Save return value
+			delete curr; // Delete node
+			return returnval;
+		}
 
-		constexpr friend std::ostream& operator<<(std::ostream& stream, LinkedList& other)
+		constexpr friend std::ostream& operator<<(std::ostream& stream, const LinkedList& other)
 		{
 			auto curr = other.first();
 			while (!curr->isTail())
