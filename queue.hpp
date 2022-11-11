@@ -1,5 +1,12 @@
 #ifndef SDMUTILS_QUEUE_HPP
 #define SDMUTILS_QUEUE_HPP
+/*
+
+SDMUTILS - Queue
+
+Circular Fixed Sized Array Based Queue
+
+*/
 #include <iostream>
 namespace sdm
 {
@@ -22,7 +29,7 @@ class queue
 		--m_CAPACITY;
 		return true;
 	}
-	constexpr Type poll()
+	constexpr Type poll() // TODO | Return Type to Bool for proper termination , Extract Polled Value via Reference Parameter
 	{
 		if (m_CAPACITY >= size)
 			return 0;
@@ -40,7 +47,7 @@ class queue
 			stream << other.poll() << ' ';
 		return stream;
 	}
-	constexpr void DEBUGSTATUS()
+	constexpr void DEBUGSTATUS() // Temporary
 	{
 		std::cout << "DEBUG: " <<  m_START << ' ' << m_END << ' ' << m_CAPACITY <<  std::endl;
 	}
