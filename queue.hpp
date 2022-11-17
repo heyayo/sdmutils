@@ -14,11 +14,12 @@ template<typename Type, int size>
 class queue
 {
 	Type data[size];
-	unsigned m_START = 0;
-	unsigned m_END = 0;
-	unsigned m_CAPACITY = size;
+	unsigned m_START = 0; // Start of Queue
+	unsigned m_END = 0; // End of Queue
+	unsigned m_CAPACITY = size; // Empty Space in Queue
 
 	public:
+	constexpr queue() { for (int i = 0; i < size; ++i) data[i] = -1; }
 	constexpr bool enqueue(const Type& payload)
 	{
 		if (m_CAPACITY == 0)
@@ -41,7 +42,7 @@ class queue
 	}
 	constexpr bool isEmpty()
 	{ return m_CAPACITY >= size; }
-	constexpr friend std::ostream& operator<<(std::ostream& stream, queue& other)
+	constexpr friend std::ostream& operator<<(std::ostream& stream, queue other) // Peek into Queue without Extraction
 	{
 		while (!other.isEmpty())
 			stream << other.poll() << ' ';
