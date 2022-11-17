@@ -3,13 +3,12 @@
 
 namespace sdm
 {
-	template<typename Type>
+	template<typename t_Left,typename t_Right>
 	class pair
 	{
 		public:
-
-		Type left;
-		Type right;
+		t_Left left;
+		t_Right right;
 	};
 }
 #endif
