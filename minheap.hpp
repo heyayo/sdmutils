@@ -79,18 +79,129 @@ namespace sdm
             }
             return false;
         }
-        constexpr void stablize(int begin = 0)
-        {
-            Type *leftChild = m_heap[left(begin)];
-            Type *rightChild = m_heap[right(begin)];
-
-            if (*leftChild < *m_heap[begin])
-            {sdm::swap(leftChild,m_heap[begin]);
-                stablize(left(begin));}
-            if (*rightChild < *m_heap[begin])
-            {sdm::swap(rightChild,m_heap[begin]);
-                stablize(right(begin));}
-        }
+		constexpr void upsort(int index)
+		{
+			int parentIndex = parent(index);
+			while ((*m_heap[index] < *m_heap[parentIndex]) && index > 0)
+			{
+				sdm::swap(m_heap[index],m_heap[parentIndex]);
+				index = parentIndex;
+				parentIndex = parent(index);
+			}
+		}
+		constexpr void downsort(int index)
+		{
+			int leftChildIndex = left(index);
+			int rightChildIndex = right(index);
+			while (index < m_end)
+			{
+				bool leftGood = m_heap[leftChildIndex] != nullptr;
+				bool rightGood = m_heap[rightChildIndex] != nullptr;
+				if (leftGood && rightGood)
+				{
+					if (*m_heap[leftChildIndex] < *m_heap[rightChildIndex])
+					{
+						if (*m_heap[leftChildIndex] < *m_heap[index])
+						{
+							sdm::swap(m_heap[leftChildIndex], m_heap[index]);
+							index = leftChildIndex;
+							leftChildIndex = left(index);
+							rightChildIndex = right(index);
+							continue;
+						}
+					}
+					else
+					{
+						if (*m_heap[rightChildIndex] < *m_heap[index])
+						{
+							sdm::swap(m_heap[rightChildIndex],m_heap[index]);
+							index = rightChildIndex;
+							leftChildIndex = left(index);
+							rightChildIndex = right(index);
+							continue;
+						}
+					}
+				}
+				if (leftGood)
+				{
+					if (*m_heap[leftChildIndex] < *m_heap[index])
+					{
+						sdm::swap(m_heap[leftChildIndex],m_heap[index]);
+						index = leftChildIndex;
+						leftChildIndex = left(index);
+						rightChildIndex = right(index);
+						continue;
+					}
+				}
+				if (rightGood)
+				{
+					if (*m_heap[rightChildIndex] < *m_heap[index])
+					{
+						sdm::swap(m_heap[rightChildIndex],m_heap[index]);
+						index = rightChildIndex;
+						leftChildIndex = left(index);
+						rightChildIndex = right(index);
+						continue;
+					}
+				}
+				break;
+			}
+		}
+		constexpr void forceup(int index)
+		{
+			int parentIndex = parent(index);
+			while (index > 0)
+			{
+				sdm::swap(m_heap[index],m_heap[parentIndex]);
+				index = parentIndex;
+				parentIndex = parent(index);
+			}
+		}
+		constexpr void forcedown(int index)
+		{
+			int leftChild = left(index);
+			int rightChild = right(index);
+			while (index < m_end)
+			{
+				bool leftGood = m_heap[leftChild] != nullptr;
+				bool rightGood = m_heap[rightChild] != nullptr;
+				if (leftGood && rightGood)
+				{
+					if (*m_heap[leftChild] < *m_heap[rightChild])
+					{
+						sdm::swap(m_heap[index],m_heap[leftChild]);
+						index = leftChild;
+						leftChild = left(index);
+						rightChild = right(index);
+						continue;
+					} else
+					{
+						sdm::swap(m_heap[index], m_heap[rightChild]);
+						index = rightChild;
+						leftChild = left(index);
+						rightChild = right(index);
+						continue;
+					}
+				}
+				if (leftGood)
+				{
+					sdm::swap(m_heap[index],m_heap[leftChild]);
+					index = leftChild;
+					leftChild = left(index);
+					rightChild = right(index);
+					continue;
+				}
+				if (rightGood)
+				{
+					sdm::swap(m_heap[index],m_heap[rightChild]);
+					index = rightChild;
+					leftChild = left(index);
+					rightChild = right(index);
+					continue;
+				}
+				break;
+			}
+		}
     public:
         minheap()
         {
@@ -128,6 +239,11 @@ namespace sdm
             else data = target;
             return Find(data,[](Type* a, Type* b){ return *a == *b; });
         }
+		constexpr void stabilize(int index)
+		{
+			upsort(index);
+			downsort(index);
+		}
         constexpr void insert(Type* payload)
         {
             if (m_end >= size) return;
@@ -153,18 +269,15 @@ namespace sdm
         template<typename T, class compare>
         constexpr void remove(T payload, compare comparator)
         {
-            int position;
+            int position = -1;
             if constexpr (std::is_same<Type,T>::value)
                 position = Find(&payload,comparator);
             else position = Find(payload,comparator);
             if (position < 0) return;
-            delete m_heap[position];
-            m_heap[position] = nullptr;
-            while (m_heap[++position])
-            {
-                m_heap[position-1] = m_heap[position];
-            }
-            m_heap[position-1] = nullptr;
+			forceup(position);
+            delete m_heap[0];
+            m_heap[0] = nullptr;
+			forcedown(0);
             --m_end;
         }
         template<typename T>
@@ -179,25 +292,20 @@ namespace sdm
                 return *a == *b;
             });
         }
-        constexpr void sort(int index)
-        {
-            int current = index;
-            int parentIndex = parent(index);
-            while ((*m_heap[current] < *m_heap[parentIndex]) && current > 0)
-            {
-                /*
-                Type* swapptr = m_heap[current];
-                m_heap[current] = m_heap[parentIndex];
-                m_heap[parentIndex] = swapptr;
-                 */
-                sdm::swap(m_heap[current],m_heap[parentIndex]);
-
-                current = parentIndex;
-                parentIndex = parent(current);
-            }
-        }
         constexpr friend std::ostream& operator<<(std::ostream& stream, const minheap& heap) { heap.Preorder(0,stream, 0); return stream; }
-        constexpr void debugPrint() { for (int i = 0; i < m_end+1; ++i) std::cout << *m_heap[i] << ", "; std::cout << std::endl;}
+        constexpr void debugPrint()
+		{
+			for (int i = 0; i < m_end+1; ++i)
+			{
+				if (!m_heap[i])
+				{
+					std::cout << "NULL ";
+					continue;
+				}
+				std::cout << *m_heap[i] << ", ";
+			}
+			std::cout << std::endl;
+		}
     };
 }
 
