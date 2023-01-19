@@ -3,6 +3,7 @@
 
 namespace sdm
 {
+	// Doesn't really work
     template<typename Type>
     class Generic_Iterator
     {
