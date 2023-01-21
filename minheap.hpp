@@ -75,6 +75,7 @@ namespace sdm
         {
             for (int i = 0; i < m_end; ++i)
             {
+				if (!m_heap[i]) continue;
                 if (*ref == *m_heap[i]) return true;
             }
             return false;
@@ -147,6 +148,7 @@ namespace sdm
 				break;
 			}
 		}
+        /* Forces value at index to root position, unused
 		constexpr void forceup(int index)
 		{
 			int parentIndex = parent(index);
@@ -157,6 +159,7 @@ namespace sdm
 				parentIndex = parent(index);
 			}
 		}
+        */
 		constexpr void forcedown(int index)
 		{
 			int leftChild = left(index);
@@ -226,6 +229,7 @@ namespace sdm
             else data = target;
             for (int i = 0; i < m_end; ++i)
             {
+                if (!m_heap[i]) continue;
                 if (comp(data,m_heap[i])) return i;
             }
             return -1;
@@ -252,9 +256,9 @@ namespace sdm
 
             int current = m_end;
             int parent = (current-1)/2;
-            while ((*payload < *m_heap[parent]) && current > 0)
+            while (m_heap[parent] && current > 0)
             {
-                //if (!payload && !m_heap[parent]) break; if (!(*payload < *(m_heap[parent]))) break;
+				if (!(*payload < *m_heap[parent])) break;
                 /*
                 Type* swap = m_heap[parent];
                 m_heap[parent] = m_heap[current];
@@ -274,10 +278,10 @@ namespace sdm
                 position = Find(&payload,comparator);
             else position = Find(payload,comparator);
             if (position < 0) return;
-			forceup(position);
-            delete m_heap[0];
-            m_heap[0] = nullptr;
-			forcedown(0);
+			// forceup(position);
+            delete m_heap[position];
+            m_heap[position] = nullptr;
+			forcedown(position);
             --m_end;
         }
         template<typename T>
