@@ -71,15 +71,6 @@ namespace sdm
             return false;
         }
          */
-        constexpr bool DuplicateCheck(Type* ref)
-        {
-            for (int i = 0; i < m_end; ++i)
-            {
-				if (!m_heap[i]) continue;
-                if (*ref == *m_heap[i]) return true;
-            }
-            return false;
-        }
 		constexpr void upsort(int index)
 		{
 			int parentIndex = parent(index);
@@ -159,7 +150,7 @@ namespace sdm
 				parentIndex = parent(index);
 			}
 		}
-        */
+         Forces value to the bottom of any path in tree, unused
 		constexpr void forcedown(int index)
 		{
 			int leftChild = left(index);
@@ -205,6 +196,7 @@ namespace sdm
 				break;
 			}
 		}
+        */
     public:
         minheap()
         {
@@ -218,8 +210,25 @@ namespace sdm
                 delete m_heap[i];
         }
 
-        constexpr Type& operator[](const int& index) { return *m_heap[index]; }
+        constexpr Type* operator[](const int& index) { return m_heap[index]; }
 
+        constexpr bool DuplicateCheck(Type* ref)
+        {
+            for (int i = 0; i <= m_end; ++i)
+            {
+                if (*ref == *m_heap[i]) return true;
+            }
+            return false;
+        }
+		constexpr bool DuplicateCheck(int index)
+		{
+			for (int i = 0; i <= m_end; ++i)
+			{
+				if (i == index) continue;
+                if (*m_heap[index] == *m_heap[i]) return true;
+			}
+			return false;
+		}
         template<typename T, class comparator>
         constexpr int Find(T target, comparator comp)
         {
@@ -227,9 +236,8 @@ namespace sdm
             if constexpr (std::is_same<Type,T>::value)
                 data = &target;
             else data = target;
-            for (int i = 0; i < m_end; ++i)
+            for (int i = 0; i <= m_end; ++i)
             {
-                if (!m_heap[i]) continue;
                 if (comp(data,m_heap[i])) return i;
             }
             return -1;
@@ -256,9 +264,8 @@ namespace sdm
 
             int current = m_end;
             int parent = (current-1)/2;
-            while (m_heap[parent] && current > 0)
+            while ((*payload < *m_heap[parent]) && current > 0)
             {
-				if (!(*payload < *m_heap[parent])) break;
                 /*
                 Type* swap = m_heap[parent];
                 m_heap[parent] = m_heap[current];
@@ -278,10 +285,11 @@ namespace sdm
                 position = Find(&payload,comparator);
             else position = Find(payload,comparator);
             if (position < 0) return;
-			// forceup(position);
             delete m_heap[position];
             m_heap[position] = nullptr;
-			forcedown(position);
+			sdm::swap(m_heap[position],m_heap[m_end]);
+			downsort(position);
+			//forcedown(position);
             --m_end;
         }
         template<typename T>
@@ -299,13 +307,8 @@ namespace sdm
         constexpr friend std::ostream& operator<<(std::ostream& stream, const minheap& heap) { heap.Preorder(0,stream, 0); return stream; }
         constexpr void debugPrint()
 		{
-			for (int i = 0; i < m_end+1; ++i)
+			for (int i = 0; i <= m_end; ++i)
 			{
-				if (!m_heap[i])
-				{
-					std::cout << "NULL ";
-					continue;
-				}
 				std::cout << *m_heap[i] << ", ";
 			}
 			std::cout << std::endl;
