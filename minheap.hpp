@@ -258,8 +258,8 @@ namespace sdm
 		}
         constexpr void insert(Type* payload)
         {
-            if (m_end >= size) return;
-            if (DuplicateCheck(payload)) return;
+            if (m_end >= size) {delete payload; return;};
+            if (DuplicateCheck(payload)) {delete payload; return;};
             m_heap[++m_end] = payload;
 
             int current = m_end;
